@@ -245,3 +245,91 @@ addEventListener 메서드는 하나 이상의 이벤트 핸들러 등록 가능
 ```
 
 → 하나만 등록됨
+
+# 40.4 이벤트 핸들러 제거
+
+`addEventListener` 메서드로 등록한 이벤트 핸들러 제거 → `EventTarget.prototype.removeEventListener` 사용
+<br/>
+
+<br/>
+
+```html
+<button>Click me!</button>
+<script>
+  const $button = document.querySelector('button')
+
+  const handleClick = () => console.log('button click')
+
+  // 이벤트 핸들러 등록
+  $button.addEventListener('click', handleClick)
+
+  // 이벤트 핸들러 제거
+  // addEventListener 메서드에 전달한 인수와 removeEventListener 메서드에
+  // 전달한 인수가 일치하지 않으면 이벤트 핸들러가 제거되지 않는다.
+  $button.removeEventListener('click', handleClick, true) // 실패
+  $button.removeEventListener('click', handleClick) // 성공
+</script>
+```
+
+- 제거하려면 `addEventListener`에 전달한 인수와 `removeEventListener`에 전달한 인수가 일치해야함
+- 이벤트 핸들러를 제거하려면 이벤트 핸들러의 참조를 변수나 자료구조에 저장하고 있어야 함
+  - 무명 함수를 등록한 경우 제거 불가
+
+<br/>
+기명 이벤트 핸들러 내부에서 이벤트 핸들러 제거하기
+<br/>
+
+```jsx
+// 기명 함수를 이벤트 핸들러로 등록
+$button.addEventListener('click', function foo() {
+  console.log('button click')
+  // 이벤트 핸들러를 제거한다. 따라서 이벤트 핸들러는 단 한 번만 호출된다.
+  $button.removeEventListener('click', foo)
+})
+```
+
+![alt text](images/event.image-3.png)
+
+- 처음에 한번만 호출됨
+
+<br/>
+<br/>
+
+```jsx
+// 무명 함수를 이벤트 핸들러로 등록
+$button.addEventListener('click', function () {
+  console.log('button click')
+  // 이벤트 핸들러를 제거한다. 따라서 이벤트 핸들러는 단 한 번만 호출된다.
+  // arguments.callee는 호출된 함수, 즉 함수 자신을 가리킨다.
+  $button.removeEventListener('click', arguments.callee)
+})
+```
+
+- `arguments.callee`는 자기 자신을 가리킴
+  - 현재 실행 중인 함수 자신
+- 따라서 `$button.removeEventListener('click', arguments.callee);` 는 자기 자신을 제거하는 함수
+- `addEventListener`에 작성한 인자랑 같은거임
+- 기명함수일때는 필요없을듯 익명함수일때 유용
+
+  <br/>
+  <br/>
+
+이벤트 프로퍼티 방식으로 등록한 이벤트 핸들러는 이벤트 핸들러 프로퍼티에 null을 할당하여 제거
+
+```html
+<button>Click me!</button>
+<script>
+  const $button = document.querySelector('button')
+
+  const handleClick = () => console.log('button click')
+
+  // 이벤트 핸들러 프로퍼티 방식으로 이벤트 핸들러 등록
+  $button.onclick = handleClick
+
+  // removeEventListener 메서드로 이벤트 핸들러를 제거할 수 없다.
+  $button.removeEventListener('click', handleClick)
+
+  // 이벤트 핸들러 프로퍼티에 null을 할당하여 이벤트 핸들러를 제거한다.
+  $button.onclick = null
+</script>
+```
