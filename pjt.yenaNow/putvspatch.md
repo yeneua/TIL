@@ -78,3 +78,42 @@ API 타입 `Partial`로 바꿔주기
     return response.data
   },
 ```
+
+## 추추가
+
+내 정보 수정 필드가 `name`, `nickname`, `phoneNumber`에서 아래와 같이 바뀜
+
+```json
+{
+  "email": "test@test.com",
+  "name": "test",
+  "nickname": "testNick",
+  "gender": "MALE",
+  "birthdate": "2001-01-01",
+  "phoneNumber": "010-1234-5678",
+  "profileUrl": "urllllllllllllllllllll"
+}
+```
+
+왜??
+
+- 초기 기획 단계에서는 nama, nickname, phoneNumber만 변할 수 있는 값이라고 생각하여 수정 가능한 필드로 설정
+- 예를 들면 생일은 변하지 않기 때문 ~~잘못 입력하는 경우는? 한번에 제대로 입력하라해~~
+
+  <br/>
+
+- 그리고 우리 서비스에서 최초 회원가입 후에 회원 정보를 입력받고 있는데
+- name, nickname만 필수 항목이고 나머지는 선택항목임
+- 그럼 초기 회원 정보 입력에서 나머지 항목을 입력하지 않았다면
+- 그 사용자는 나머지 필드를 입력할 수가 없음!
+- '남성' 이라고 잘못 입력하면 다신 못 바꾸는 거임...
+- 그래서 내 정보 수정 request 필드가 추가된 것
+  <br/>
+
+<br/>
+=> 고민했던 부분이 왜 중요한지 느낄 수 있었음
+<br/>
+각각 필드 상태를 관리했더라면 추가된 필드 개수만큼 또 상태를 추가했어야 됐을 것임
+<br/>
+
+그치만 나는 userData라는 하나의 객체로 묶어서 관리하고 있었기 때문에 효율적!
