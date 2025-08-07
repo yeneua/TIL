@@ -67,6 +67,7 @@ useEffect(() => {
 ![alt text](images/dataRefreshIssue.image-1.png)
 
 허허 .. 무한 호출이 일어나고 있었다 ㅎㅎ
+
 **👉 원인**
 `MyProfileInfo` 부모 커모넌트가 리렌더링될 때마다 fetch `fetchMyInfo`가 새로운 함수로 만들어짐<br/>
 자식 컴포넌트 `ProfileView`에서는 `fetchMyInfo`가 계속 바뀐다고 감지<br/>
@@ -100,3 +101,55 @@ const fetchMyInfo = useCallback(async () => {
 부모 컴포넌트에서 fetchMyInfo 함수가 메모이제이션되어서 리렌더링 될 때마다 새로 생기는 것이 아니니까<br/>
 자식 컴포넌트에서는 함수 참조가 변하지 않게 되고<br/>
 useEffect 의존성 배열에서 감지하는 fetchMyInfo가 변하지 않으니 무한 호출 밟생x
+
+### 과정 3
+
+**⚠️ 에러**
+
+또 똑같이 무한 호출이 일어나고 있었음...
+내가 확인한 건 뭐였는지 ㅎㅎ
+
+**👉 원인**
+
+의존성 배열에 error를 넣으면 컴포넌트가 리렌더링될 때마다 매번 새로운 `error` 함수를 만듦<br/>
+그래서 연쇄 반응으로 useEffect가 다시 실행되고 무한 루프 발생
+
+**✅ 해결**
+
+근본적인 해결
+useToast 훅을 useCallback으로 작성하자
+
+```typescript
+export const useToast = () => {
+  const success = useCallback((message: string) => {
+    toast.success(message)
+  }, [])
+  return { success }
+}
+```
+
+<br/>
+
+의존성 배열에 참조하는 외부 값 작성해주기
+
+```typescript
+// MyProfileInfo.tsx
+
+const fetchMyInfo = useCallback(async () => {
+  try {
+    const myData = await userAPI.getUserMeInfo()
+    setMyInfo(myData)
+  } catch {
+    error('내 정보를 불러오는 데 실패했습니다.')
+  }
+}, [error, setMyInfo])
+
+useEffect(() => {
+  fetchMyInfo()
+}, [fetchMyInfo])
+
+// ProfileView.tsx
+useEffect(() => {
+  fetchMyInfo()
+}, [fetchMyInfo])
+```
