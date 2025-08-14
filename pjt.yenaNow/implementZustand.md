@@ -334,6 +334,49 @@ apiClient.interceptors.response.use(
 export default apiClient
 ```
 
+## 토큰 저장 방식 변경 : localStorage -> 메모리
+
+> 토큰 저장 위치 : local storage, session storage, cookie, 메모기
+
+1. 로컬 스토리지(local storage)
+
+- 클라이언트 측에 데이터를 영구 저장하는 방법
+- 탭/브라우저를 닫아도 유지됨
+- XSS 공격에 취약, 탈취 위험
+- 자바스크립트로 쉽게 접근 가능
+
+2. 세션 스토리지(session storage)
+
+- 브라우저가 닫히면 데이터가 삭제됨. 같은 탭에서만 유효
+- local storage보다는 상대적으로 보안 측면에서 안전
+- XSS 공격에 취약
+
+3. 쿠키(cookie)
+
+- 쿠키는 클라이언트 요청에 자동적으로 포함됨
+- http only cookie로 사용하여 js로 접근 불가하게 막을 수 있음
+  (http only : XSS 공격에 대한 보안을 높이는 방식)
+- XSS 공격에는 강하지면 CSRF 공격에는 추가 보호 필요
+
+4. 메모리
+
+- access token을 client 서버의 메모리에 저장하는 방식
+- SPA에서 주로 사용
+  - react를 사용해서 client 서버를 구현했다면 페이지가 이동하는 것처럼 보여도 실제로는 이동하지 않기 때문에 변수가 유지됨
+  - 그래서 메모리에 jwt access token이 그대로 유지되지만 페이지를 새로고침한다면 소멸되기 때문에 다시 로그인 필요
+- js에서 접근 가능하므로 XSS 취약
+
+**access token, refresh token 저장 위치 조합**
+
+=> access token은 메모리에 저장 + refresh token은 http only cookie에 저장<br/>
+새로고침하면 access token이 사라지기 때문에 refresh token만으로 access token을 재발급 받는 로직을 구현
+
+❓그러면 브라우저 탭이 열려있는 동안은 다 접근 가능?<br/>
+-> 맞다.<br/>
+-> 하지만 새로고침하면 초기화되니 토큰 유출 위험이 상대적으로 낮아짐(장기 유출 위험 낮음)
+
+✅ 브라우저 탭이 열려있는 동안에는 메모리에 저장된 access token을 통해 인증이 가능, 새로고침 시 사라지기 때문에 refresh token을 HttpOnly 쿠키에 저장해두고 access token을 재발급 받는 구조로 구성. 보안성과 편의성을 모두 고려한 전략
+
 ## 확인
 
 큰 흐름
