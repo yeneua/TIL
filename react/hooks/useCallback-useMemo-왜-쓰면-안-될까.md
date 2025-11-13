@@ -31,3 +31,35 @@ const value = useMemo(() => 계산식, [deps]);
 // deps가 안 바뀌면 이전 결과 재사용
 const filtered = useMemo(() => items.filter((item) => item.active), [items]);
 ```
+
+## 왜 쓰면 안될까?
+
+### 1. 최적화에도 비용이 든다
+
+`useCallback`, `useMemo` 자체에도 비용이 든다
+
+```jsx
+//  불필요한 최적화
+function Component() {
+  const handleClick = useCallback(() => {
+    console.log("clicked");
+  }, []);
+
+  return <button onClick={handleClick}>Click me</button>;
+}
+
+// 더 간단하고 빠름
+function Component() {
+  const handleClick = () => {
+    console.log("clicked");
+  };
+
+  return <button onClick={handleClick}>Click me</button>;
+}
+```
+
+- 첫 번째 함수에서 `useCallback`은 함수를 메모리에 저장하고, 의존성 배열을 비교하여, 필요시 새 함수를 생성하고 있음
+- 일반 함수 선언보다 더 많은 작업을 하고 있음
+- 캐시해야 핳 값과 함수가 많아지면 메모리 사용량이 증가함
+- 함수 생성 비용이나 값 계산 비용이 비교 연산 비용보다 싸면은 `useCallback`, `useMemo`를 사용하는 것이 오히려 성능을 저하시킴
+
